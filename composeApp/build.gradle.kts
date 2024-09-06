@@ -33,6 +33,16 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(projects.shared)
+
+            implementation("io.insert-koin:koin-core:3.5.6")
+
+            val ktor_version = "2.3.12"
+            implementation("io.ktor:ktor-client-core:$ktor_version")
+            implementation("io.ktor:ktor-client-cio:$ktor_version")
+            implementation("io.ktor:ktor-client-websockets:$ktor_version")
+
+            val nav_version = "2.8.0"
+            implementation("androidx.navigation:navigation-compose:$nav_version")
         }
     }
 }
