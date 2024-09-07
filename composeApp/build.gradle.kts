@@ -22,6 +22,9 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+
+            implementation("io.insert-koin:koin-androidx-compose:3.5.6")
+            implementation("io.insert-koin:koin-androidx-compose-navigation:3.5.6")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
