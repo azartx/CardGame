@@ -1,5 +1,7 @@
 package com.solo4.cardgame.data.service
 
+import com.solo4.cardgame.data.model.gamecommands.CommandData
+import com.solo4.cardgame.data.model.gamecommands.toGameCommand
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSocketException
@@ -12,6 +14,8 @@ import io.ktor.websocket.send
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class GameService(private val client: HttpClient) {
 
@@ -21,10 +25,8 @@ class GameService(private val client: HttpClient) {
         return flow {
             client.webSocket(
                 method = HttpMethod.Get,
-                host = "TODO HOST",
-                port = null,
-                path = "",
-                request = {}
+                host = "localhost",
+                port = 13255,
             ) {
                 session = this
                 try {
@@ -41,10 +43,10 @@ class GameService(private val client: HttpClient) {
         }
     }
 
-    suspend fun sendGameEvent(event: String): Result<String> {
+    suspend fun sendGameEvent(event: CommandData): Result<String> {
         return session?.takeIf { it.isActive }?.let { webSocketSession ->
             try {
-                webSocketSession.send(event)
+                webSocketSession.send(Json.encodeToString(event.toGameCommand()))
                 Result.success("")
             } catch (e: Throwable) {
                 closeSession()
