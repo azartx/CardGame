@@ -1,6 +1,8 @@
 package com.solo4.cardgame.data.service
 
+import com.solo4.cardgame.data.base.ApiResult
 import com.solo4.cardgame.data.model.gamecommands.CommandData
+import com.solo4.cardgame.data.model.gamecommands.InitCommandData
 import com.solo4.cardgame.data.model.gamecommands.toGameCommand
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
@@ -11,6 +13,7 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
@@ -41,6 +44,21 @@ class GameService(private val client: HttpClient) {
                 }
             }
         }
+    }
+
+    suspend fun joinToLobby(playerName: String): ApiResult {
+        return session?.let { currentSession ->
+            try {
+                currentSession.send(Json.encodeToString(InitCommandData(playerName).toGameCommand()))
+                ApiResult.Success()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ApiResult.Failure.Other(e)
+            } finally {
+                closeSession()
+            }
+        } ?: ApiResult.Failure.WebSocketWasClosed
     }
 
     suspend fun sendGameEvent(event: CommandData): Result<String> {
