@@ -6,10 +6,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import org.koin.androidx.compose.koinViewModel
@@ -18,12 +16,14 @@ import org.koin.androidx.compose.koinViewModel
 fun MenuScreen(navController: NavHostController) {
 
     val viewModel = koinViewModel<MenuViewModel>()
-    var userName by remember { mutableStateOf("") }
+    val userName by viewModel.userName.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TextField(value = userName, onValueChange = { userName = it })
+        TextField(value = userName, onValueChange = viewModel::onUserNameChanged)
         Button(onClick = viewModel::onConnectToLobbyClicked) {
             Text(text = "Присоединиться к лобби")
         }
+        // TODO debug only, RM
+        Button(onClick = viewModel::emulateOtherPlayers) { Text("Emulate connections") }
     }
 }
