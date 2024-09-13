@@ -48,6 +48,8 @@ kotlin {
             implementation("androidx.navigation:navigation-compose:$nav_version")
 
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
+
+            implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.5")
         }
     }
 }

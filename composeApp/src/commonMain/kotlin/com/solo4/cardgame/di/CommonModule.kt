@@ -6,5 +6,7 @@ val commonModule = module {
     includes(
         platformModule,
         networkModule,
+        viewModelModule,
+        repositoryModule,
     )
 }
