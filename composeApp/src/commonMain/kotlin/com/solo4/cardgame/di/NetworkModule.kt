@@ -1,5 +1,6 @@
 package com.solo4.cardgame.di
 
+import com.solo4.cardgame.data.model.GameCommandDeserializer
 import com.solo4.cardgame.data.service.GameService
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -13,5 +14,7 @@ internal val networkModule = module {
         }
     }
 
-    factory { GameService(get()) }
+    single { GameCommandDeserializer() }
+
+    factory { GameService(get(), get()) }
 }

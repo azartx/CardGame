@@ -1,7 +1,7 @@
 package com.solo4.cardgame.data.service
 
-import android.util.Log
 import com.solo4.cardgame.data.base.ApiResult
+import com.solo4.cardgame.data.model.GameCommandDeserializer
 import com.solo4.cardgame.data.model.gamecommands.CommandData
 import com.solo4.cardgame.data.model.gamecommands.InitCommandData
 import com.solo4.cardgame.data.model.gamecommands.toGameCommand
@@ -10,44 +10,45 @@ import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSocketException
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.http.HttpMethod
-import io.ktor.http.URLProtocol
-import io.ktor.websocket.Frame
+import io.ktor.websocket.FrameType
 import io.ktor.websocket.close
-import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class GameService(private val client: HttpClient) {
+class GameService(private val client: HttpClient, private val commandDeserializer: GameCommandDeserializer) {
 
     private var session: DefaultClientWebSocketSession? = null
 
-    suspend fun openWebSocketConnection()/*: Flow<Any>*/ {
-        /*return flow {*/
-            client.webSocket(
-                method = HttpMethod.Get,
-                host = "192.168.100.15",
-                port = 13255,
-            ) {
-                session = this
-                try {
+    fun openWebSocketConnection(): Flow<ApiResult> {
+        return flow {
+            try {
+                client.webSocket(
+                    method = HttpMethod.Get,
+                    host = "192.168.100.15",
+                    port = 13255,
+                ) {
+                    session = this
                     while (true) {
-                       delay(200)
+                        val frame = incoming.receive()
+                        if (frame.frameType == FrameType.PING) {
+                            send("{\"Command\":\"PONG\"}")
+                        }
+                        emit(ApiResult.Success(Json.decodeFromString(commandDeserializer, String(frame.data))))
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }finally {
-                    Log.e("ffff", "ERROR")
-                    session = null
-                    this.close()
                 }
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                emit(ApiResult.Failure.Other(e))
+            } finally {
+                session = null
             }
-      //  }
+        }
     }
 
     suspend fun joinToLobby(playerName: String): ApiResult {
