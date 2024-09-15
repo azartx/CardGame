@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.solo4.cardgame.data.repository.MenuRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MenuViewModel(private val menuRepository: MenuRepository) : ViewModel() {
@@ -15,6 +16,9 @@ class MenuViewModel(private val menuRepository: MenuRepository) : ViewModel() {
     init {
         viewModelScope.launch {
             menuRepository.openGameConnection()
+                .collectLatest {
+                    println(it)
+                }
         }
     }
 
@@ -26,11 +30,5 @@ class MenuViewModel(private val menuRepository: MenuRepository) : ViewModel() {
 
     fun onUserNameChanged(userName: String) {
         viewModelScope.launch { this@MenuViewModel._userName.emit(userName) }
-    }
-
-    fun emulateOtherPlayers() {
-        viewModelScope.launch {
-            menuRepository.emulateOtherConnections()
-        }
     }
 }

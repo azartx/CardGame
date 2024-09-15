@@ -10,18 +10,15 @@ import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSocketException
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.http.HttpMethod
-import io.ktor.websocket.FrameType
 import io.ktor.websocket.close
 import io.ktor.websocket.send
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class GameService(private val client: HttpClient, private val commandDeserializer: GameCommandDeserializer) {
+class GameService(private val client: HttpClient) {
 
     private var session: DefaultClientWebSocketSession? = null
 
@@ -36,10 +33,12 @@ class GameService(private val client: HttpClient, private val commandDeserialize
                     session = this
                     while (true) {
                         val frame = incoming.receive()
-                        if (frame.frameType == FrameType.PING) {
+                        val json = String(frame.data)
+                        if (json.contains("PING")) {
                             send("{\"Command\":\"PONG\"}")
+                        } else {
+                            emit(ApiResult.Success(GameCommandDeserializer.deserializeGameCommand(String(frame.data))))
                         }
-                        emit(ApiResult.Success(Json.decodeFromString(commandDeserializer, String(frame.data))))
                     }
                 }
             } catch (e: Throwable) {

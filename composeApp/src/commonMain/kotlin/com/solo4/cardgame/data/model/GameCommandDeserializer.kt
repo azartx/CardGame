@@ -1,24 +1,24 @@
 package com.solo4.cardgame.data.model
 
-import com.solo4.cardgame.data.model.gamecommands.CommandData
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import com.solo4.cardgame.data.model.gamecommands.AddCardsCommandData
+import com.solo4.cardgame.data.model.gamecommands.AddGoldsCommandData
+import com.solo4.cardgame.data.model.gamecommands.InitGameCommandData
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
-// TODO
-class GameCommandDeserializer : KSerializer<GameCommand<out CommandData>> {
+object GameCommandDeserializer {
 
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("GameCommand") {
+    fun deserializeGameCommand(json: String): GameCommand<*> {
+        val jsonMap = Json.parseToJsonElement(json).jsonObject.toMap()
 
-    }
+        val command = jsonMap["Command"]!!.jsonPrimitive.content
 
-    override fun deserialize(decoder: Decoder): GameCommand<out CommandData> {
-        throw NotImplementedError()
-    }
-
-    override fun serialize(encoder: Encoder, value: GameCommand<out CommandData>) {
-
+        return when (command.lowercase()) {
+            "init_game" -> Json.decodeFromString<GameCommand<InitGameCommandData>>(json)
+            "add_cards" -> Json.decodeFromString<GameCommand<AddCardsCommandData>>(json)
+            "add_golds" -> Json.decodeFromString<GameCommand<AddGoldsCommandData>>(json)
+            else -> throw IllegalArgumentException()
+        }
     }
 }

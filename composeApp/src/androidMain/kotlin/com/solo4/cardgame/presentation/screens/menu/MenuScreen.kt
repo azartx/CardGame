@@ -23,7 +23,5 @@ fun MenuScreen(navController: NavHostController) {
         Button(onClick = viewModel::onConnectToLobbyClicked) {
             Text(text = "Присоединиться к лобби")
         }
-        // TODO debug only, RM
-        Button(onClick = viewModel::emulateOtherPlayers) { Text("Emulate connections") }
     }
 }
